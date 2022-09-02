@@ -1,26 +1,11 @@
 const { json } = require("body-parser");
-const fs = require("fs");
 const { get } = require("http");
-const path = require("path");
-
-const p = path.join(
-    path.dirname(require.main.filename),
-    "data",
-    "products.json"
-);
-
-const getProductsFromFile = (cb) => {
-    fs.readFile(p, (err, fileContent) => {
-        if (err) {
-            cb([]);
-        } else {
-            cb(JSON.parse(fileContent));
-        }
-    });
-};
+const Cart = require("./cart");
+const db = require("../util/database");
 
 module.exports = class Product {
-    constructor(title, imageUrl, price, description) {
+    constructor(id, title, imageUrl, price, description) {
+        this.id = id;
         this.title = title;
         this.imageUrl = imageUrl;
         this.price = price;
@@ -28,15 +13,19 @@ module.exports = class Product {
     }
 
     save() {
-        getProductsFromFile((products) => {
-            products.push(this);
-            fs.writeFile(p, JSON.stringify(products), (err) => {
-                console.log(err);
-            });
-        });
+        return db.execute(
+            "INSERT INTO products (title, price, imageUrl, description) VALUES (?,?,?,?)",
+            [this.title, this.price, this.imageUrl, this.description]
+        );
     }
 
-    static fetchAll(cb) {
-        getProductsFromFile(cb);
+    static deleteById(id) {}
+
+    static fetchAll() {
+        return db.execute("SELECT * FROM products");
+    }
+
+    static getById(id) {
+        return db.execute("SELECT * FROM products WHERE products.id = ?", [id]);
     }
 };
