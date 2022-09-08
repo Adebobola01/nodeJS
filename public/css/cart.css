@@ -1,0 +1,19 @@
+.cart__item {
+    display: flex;
+    list-style: none;
+    width: 34rem;
+    justify-content: space-around;
+    margin: auto;
+    border: 2px solid rgb(0, 0, 0);
+    align-items: center;
+}
+
+.cart__item button {
+    color: red;
+    border: 1px solid red;
+}
+
+.cart__item button:hover {
+    color: white;
+    background-color: red;
+}
