@@ -5,6 +5,15 @@ const mongoose = require("mongoose");
 const express = require("express");
 const bodyParser = require("body-parser");
 const User = require("./models/user");
+const session = require("express-session");
+const MongoDbStore = require("connect-mongodb-session")(session);
+const MongoDB_URI =
+    "mongodb+srv://Adebobola:Remmys2206@atlascluster.qbcmaay.mongodb.net/?retryWrites=true&w=majority";
+
+const store = new MongoDbStore({
+    uri: MongoDB_URI,
+    collection: "sessions",
+});
 
 const app = express();
 
@@ -18,12 +27,19 @@ const errorcontroller = require("./controllers/error");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
+app.use(
+    session({
+        secret: "my session",
+        resave: false,
+        saveUninitialized: false,
+        store: store,
+    })
+);
 
 app.use((req, res, next) => {
-    User.findById("63220ab63142a466d2b26e2f")
+    User.findById(req.session.user._id)
         .then((user) => {
             req.user = user;
-            console.log("connected user", req.user);
             next();
         })
         .catch((err) => {
@@ -36,25 +52,8 @@ app.use(authRoutes);
 app.use(errorcontroller.notFound);
 
 mongoose
-    .connect(
-        "mongodb+srv://Adebobola:Remmys2206@atlascluster.qbcmaay.mongodb.net/?retryWrites=true&w=majority"
-    )
+    .connect(MongoDB_URI)
     .then((result) => {
-        User.findOne()
-            .then((user) => {
-                if (!user) {
-                    const user = new User({
-                        name: "Adebobola",
-                        email: "adebobola@test.com",
-                        cart: { items: [] },
-                    });
-                    user.save();
-                }
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-
         app.listen(3000);
     })
     .catch((err) => {
