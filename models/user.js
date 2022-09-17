@@ -5,11 +5,11 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    name: {
+    email: {
         type: String,
         required: true,
     },
-    email: {
+    password: {
         type: String,
         required: true,
     },
@@ -29,13 +29,11 @@ const userSchema = new Schema({
 
 userSchema.methods.addToCart = function (product) {
     const cartProductIndex = this.cart.items.findIndex((cp) => {
-        console.log(`cp => ${cp}`, `product => ${product}`);
         return cp.productId.toString() === product._id.toString();
     });
 
     let newQuantity = 1;
     const updateCartItems = [...this.cart.items];
-    console.log(cartProductIndex);
 
     if (cartProductIndex >= 0) {
         newQuantity = this.cart.items[cartProductIndex].quantity + 1;

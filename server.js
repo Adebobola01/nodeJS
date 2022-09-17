@@ -1,11 +1,14 @@
 const http = require("http");
 const path = require("path");
 const mongoose = require("mongoose");
+const csrf = require("csurf");
+const flash = require("connect-flash");
 
 const express = require("express");
 const bodyParser = require("body-parser");
 const User = require("./models/user");
 const session = require("express-session");
+const csrfProtection = csrf();
 const MongoDbStore = require("connect-mongodb-session")(session);
 const MongoDB_URI =
     "mongodb+srv://Adebobola:Remmys2206@atlascluster.qbcmaay.mongodb.net/?retryWrites=true&w=majority";
@@ -36,7 +39,13 @@ app.use(
     })
 );
 
+app.use(csrfProtection);
+app.use(flash());
+
 app.use((req, res, next) => {
+    if (!req.session.user) {
+        return next();
+    }
     User.findById(req.session.user._id)
         .then((user) => {
             req.user = user;
@@ -46,6 +55,13 @@ app.use((req, res, next) => {
             console.log(err);
         });
 });
+
+app.use((req, res, next) => {
+    res.locals.isAuthenticated = req.session.isLoggedIn;
+    res.locals.csrfToken = req.csrfToken();
+    next();
+});
+
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);

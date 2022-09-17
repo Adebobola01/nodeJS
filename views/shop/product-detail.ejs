@@ -11,10 +11,16 @@
             </div>
             <h2><%= product.price %> </h2>
             <p><%= product.description %> </p>
+            <% if (isAuthenticated) { %>
             <form action="/cart" method="POST">
+                <input
+                        type="hidden"
+                        name="_csrf"
+                        value="<%= csrfToken %>"
+                    />
                 <button class="btn" type="submit">Add to Cart</button>
                 <input type="hidden" name="productId" value="<%= product._id %>">
             </form>
-
+            <% } %>
         </main>
         <%- include('../includes/end.ejs') %>
