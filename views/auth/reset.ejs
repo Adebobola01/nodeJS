@@ -14,12 +14,8 @@
             </div>
             <% } %>
 
-        <form class="login-form" action="/login" method="POST">
-            <input
-                        type="hidden"
-                        name="_csrf"
-                        value="<%= csrfToken %>"
-                    />
+        <form class="login-form" action="/reset" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>"/>
             <div class="form-control">
                 <label for="email">E-mail</label>
                 <input type="email" name="email" id="email">

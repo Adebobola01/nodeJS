@@ -120,7 +120,6 @@ exports.getIndex = (req, res, next) => {
                 prods: products,
                 pageTitle: "Shop",
                 path: "/",
-                csrfToken: req.csrfToken(),
             });
         })
         .catch((err) => {

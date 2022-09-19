@@ -1,14 +1,14 @@
+const { validationResult } = require("express-validator");
 const Product = require("../models/Product");
 
 exports.getAddProduct = (req, res, next) => {
     res.render("admin/edit-product", {
         pageTitle: "Add Product",
         path: "/admin/add-product",
-        formsCSS: true,
-        productCSS: true,
-        activeAddProduct: true,
-        prod: {},
         editing: false,
+        hasError: false,
+        errorMessage: null,
+        prod: {},
     });
 };
 
@@ -17,6 +17,26 @@ exports.postAddProduct = (req, res, next) => {
     const imageUrl = req.body.imageUrl;
     const price = req.body.price;
     const description = req.body.description;
+
+    const errors = validationResult(req);
+    console.log(description);
+
+    if (!errors.isEmpty()) {
+        return res.status(422).render("admin/edit-product", {
+            pageTitle: "Add Product",
+            path: "/admin/add-product",
+            editing: false,
+            prod: {
+                title: title,
+                imageUrl: imageUrl,
+                price: price,
+                description: description,
+            },
+            hasError: true,
+            errorMessage: errors.array()[0].msg,
+        });
+    }
+
     const product = new Product({
         title: title,
         price: price,
@@ -53,6 +73,8 @@ exports.getEditProduct = (req, res, next) => {
                 activeAddProduct: true,
                 editing: editMode,
                 prod: product,
+                hasError: false,
+                errorMessage: null,
             });
         })
         .catch((err) => {
@@ -69,15 +91,17 @@ exports.postEditProduct = (req, res, next) => {
 
     Product.findById(prodId)
         .then((product) => {
+            if (product.userId.toString() !== req.user._id.toString()) {
+                return res.redirect("/");
+            }
             product.title = updatedTitle;
             product.price = updatedPrice;
             product.imageUrl = updatedImageUrl;
             product.description = updatedDesc;
-            return product.save();
-        })
-        .then((result) => {
-            console.log("updated Product!");
-            res.redirect("/admin/products");
+            return product.save().then((result) => {
+                console.log("updated Product!");
+                res.redirect("/admin/products");
+            });
         })
         .catch((err) => {
             console.log(err);
@@ -86,7 +110,7 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.deleteProduct = (req, res, next) => {
     const prodId = req.body.productId;
-    Product.findByIdAndDelete(prodId)
+    Product.deleteOne({ _id: prodId, userId: req.user._id })
         .then(() => {
             console.log("deleted products");
             res.redirect("/admin/products");
@@ -97,7 +121,7 @@ exports.deleteProduct = (req, res, next) => {
 };
 
 exports.getAdminProducts = (req, res, next) => {
-    Product.find()
+    Product.find({ userId: req.user._id })
         .then((products) => {
             res.render("admin/products", {
                 prods: products,
