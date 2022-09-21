@@ -153,7 +153,7 @@ exports.getSignup = (req, res, next) => {
 exports.postLogout = (req, res, next) => {
     req.session.destroy((err) => {
         console.log(err);
-        res.redirect("/");
+        res.redirect("/login");
     });
 };
 

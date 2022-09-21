@@ -9,7 +9,6 @@ router.post(
     "/add-product",
     [
         body("title").trim().isString().isLength({ min: 3 }),
-        body("imageUrl", "image url should be a valid url").trim().isURL(),
         body("price", "price should be a valid float").trim().isFloat(),
         body(
             "description",
@@ -24,7 +23,21 @@ router.post(
 router.get("/products", isAuth, adminController.getAdminProducts);
 
 router.get("/edit-product/:productId", isAuth, adminController.getEditProduct);
-router.post("/edit-product/", isAuth, adminController.postEditProduct);
-router.post("/delete-product", isAuth, adminController.deleteProduct);
+router.post(
+    "/edit-product/",
+    [
+        body("title").trim().isString().isLength({ min: 3 }),
+        body("price", "price should be a valid float").trim().isFloat(),
+        body(
+            "description",
+            "description should be string and not greater than 400 letters"
+        )
+            .trim()
+            .isLength({ min: 5, max: 400 }),
+    ],
+    isAuth,
+    adminController.postEditProduct
+);
+router.delete("/product/:productId", isAuth, adminController.deleteProduct);
 
 module.exports = router;
